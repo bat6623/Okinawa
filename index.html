@@ -245,9 +245,12 @@
         .filter-scroll {
             display: flex;
             gap: 10px;
-            padding: 4px 16px 16px 4px;
+            padding: 4px 16px 8px 4px;
             /* Added bottom/left padding for shadows */
             overflow-x: auto;
+            flex: 1;
+            /* Adjust alignment to match buttons */
+            margin-top: -2px;
             flex: 1;
             scrollbar-width: none;
             justify-content: flex-start;
