@@ -655,7 +655,7 @@
             <div class="pill" data-filter="中部">中部</div>
             <div class="pill" data-filter="南部">南部</div>
             <div class="pill" data-filter="飯店">飯店</div>
-            <div class="pill" data-filter="飯店">飯店</div>
+            <div class="pill" data-filter="景點">景點</div>
         </div>
 
         <div class="btn-search-toggle" onclick="openSettings()" style="margin-left: 8px; margin-right: 16px;">
@@ -1334,6 +1334,8 @@
                         const cat = d.category.toLowerCase();
                         if (activeFilter === '飯店') {
                             matchFilter = cat.includes('飯店') || cat.includes('hotel') || cat.includes('住宿') || d.region === '飯店';
+                        } else if (activeFilter === '景點') {
+                            matchFilter = cat.includes('景點') || cat.includes('觀光') || cat.includes('sightseeing') || cat.includes('travel');
                         } else {
                             matchFilter = d.category === activeFilter;
                         }
@@ -1593,7 +1595,9 @@
             if (cat.includes('漢堡') || cat.includes('burger')) return 'fa-burger';
             if (cat.includes('飯糰') || cat.includes('米')) return 'fa-rice-cracker';
             if (cat.includes('披薩') || cat.includes('pizza')) return 'fa-pizza-slice';
+            if (cat.includes('披薩') || cat.includes('pizza')) return 'fa-pizza-slice';
             if (cat.includes('飯店') || cat.includes('住宿') || cat.includes('hotel')) return 'fa-bed';
+            if (cat.includes('景點') || cat.includes('觀光') || cat.includes('sightseeing')) return 'fa-camera';
 
             return 'fa-utensils'; // Default
         }
@@ -1610,6 +1614,7 @@
                 burger: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/RedDot_Burger_Shed.jpg/800px-RedDot_Burger_Shed.jpg',
                 pizza: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Eq_it-na_pizza-margherita_sep2005_sml.jpg/800px-Eq_it-na_pizza-margherita_sep2005_sml.jpg',
                 hotel: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Hotel_room_Renaissance_Columbus_Ohio.jpg/800px-Hotel_room_Renaissance_Columbus_Ohio.jpg',
+                sightseeing: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Shuri_Castle_Seiden_201708.jpg/800px-Shuri_Castle_Seiden_201708.jpg',
                 alcohol: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Kirin_beer.jpg/800px-Kirin_beer.jpg',
                 default: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Good_Food_Display_-_NCI_Visuals_Online.jpg/800px-Good_Food_Display_-_NCI_Visuals_Online.jpg'
             };
@@ -1620,7 +1625,9 @@
             if (cat.includes('甜點') || cat.includes('咖啡') || cat.includes('冰') || cat.includes('鬆餅')) return images.dessert;
             if (cat.includes('漢堡')) return images.burger;
             if (cat.includes('披薩')) return images.pizza;
+            if (cat.includes('披薩')) return images.pizza;
             if (cat.includes('飯店') || cat.includes('住宿') || cat.includes('hotel')) return images.hotel;
+            if (cat.includes('景點') || cat.includes('觀光') || cat.includes('sightseeing')) return images.sightseeing;
             if (cat.includes('酒') || cat.includes('居酒屋')) return images.alcohol;
 
             return images.default;
