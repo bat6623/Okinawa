@@ -1637,8 +1637,8 @@
 
         function downloadCsvTemplate() {
             // Updated columns based on getIdx mapping
-            const headers = ["店名", "種類", "地區", "地址", "MapCode", "GoogleMap連結", "緯度", "經度", "預算", "推薦菜色", "介紹", "圖片連結"];
-            const example = ["範例餐廳", "美食/景點", "北部/中部/南部", "沖繩縣那霸市...", "33 123 456*78", "https://goo.gl/maps/...", "26.2123", "127.6791", "1000-2000", "苦瓜炒蛋", "這是一間範例餐廳", "https://example.com/image.jpg"];
+            const headers = ["地區", "店名", "種類", "預算", "推薦菜色", "介紹", "地址", "GoogleMap連結", "緯度", "經度", "圖片連結"];
+            const example = ["北部", "範例餐廳(必填)", "美食/景點/飯店", "1000-2000", "苦瓜炒蛋", "這是一間範例餐廳", "沖繩縣那霸市...", "https://goo.gl/maps/...", "26.2123(必填)", "127.6791(必填)", "https://example.com/image.jpg"];
 
             const csvContent = "\uFEFF" + headers.join(",") + "\n" + example.join(",");
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
