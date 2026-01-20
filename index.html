@@ -1199,6 +1199,12 @@
                     <div class="popup-card">
                         <div style="width:100%; height:130px; background-image: url('${displayImg}'); background-size: cover; background-position: center; position:relative;">
                             ${!item.img ? '<div style="position:absolute; bottom:0; right:0; background:rgba(0,0,0,0.6); color:white; font-size:10px; padding:2px 8px; border-radius:6px 0 0 0;">示意圖</div>' : ''}
+                            
+                            <!-- Popup Fav Button -->
+                            <div class="fav-btn-popup" id="fav-popup-${item._uid}" onclick="toggleFavorite('${item._favKey}', this); event.stopPropagation();" 
+                                style="position:absolute; top:8px; right:8px; background:white; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(0,0,0,0.2); cursor:pointer;">
+                                <i class="${favorites.has(item._favKey) ? 'fas fa-heart' : 'far fa-heart'}" style="color:${favorites.has(item._favKey) ? '#ff3b30' : '#999'}; font-size:16px;"></i>
+                            </div>
                         </div>
                         
                         <div class="popup-content-p">
@@ -1215,7 +1221,6 @@
                                 <i class="fas fa-map-marker-alt" style="margin-right:6px; margin-top:3px; flex-shrink:0;"></i> 
                                 <span id="addr-text-${item._uid}" style="flex:1; line-height:1.4;">${item.addr || '地址讀取中...'}</span>
                                 ${item.addr ? `
-                                <button onclick="window.copyToClipboard('${item.addr.replace(/'/g, "\\'")}')" style="background:none; border:none; color:#007AFF; cursor:pointer; padding:0 8px; margin-left:4px;">
                                 <button onclick="window.copyToClipboard('${item.addr.replace(/'/g, "\\'")}')" style="background:none; border:none; color:#007AFF; cursor:pointer; padding:0 8px; margin-left:4px;">
                                     <i class="far fa-copy"></i>
                                 </button>
@@ -1716,24 +1721,48 @@
         window.toggleFavorite = function (key, btn) {
             if (favorites.has(key)) {
                 favorites.delete(key);
-                if (btn) {
-                    const icon = btn.querySelector('i');
-                    icon.className = "far fa-heart";
-                    icon.style.color = "#999";
-                }
+                updateIcon(false);
             } else {
                 favorites.add(key);
-                if (btn) {
-                    const icon = btn.querySelector('i');
-                    icon.className = "fas fa-heart";
-                    icon.style.color = "#ff3b30";
-
-                    // Simple animation
-                    icon.style.transform = "scale(1.2)";
-                    setTimeout(() => icon.style.transform = "scale(1)", 200);
-                }
+                updateIcon(true);
             }
             localStorage.setItem('my_favorites', JSON.stringify([...favorites]));
+
+            // Also update any other instances (e.g. if Card clicked, update Popup; if Popup clicked, update Card)
+            // We can find them by data attributes or ID patterns if we had them, 
+            // but for now, we rely on the fact that if 'btn' is passed, it updates that specific one.
+            // We should ideally broadcast the change.
+            // Simple broadcast: find all buttons with that key? No, we don't store key on button DOM easily accessible.
+            // But we know the ID patterns: `fav-popup-${uid}` (wait we need uid) ... 
+            // Actually, best is to just re-render dependent parts or targeted update.
+            // For now, let's just make sure we update the specific clicked element.
+            // Improve: Find the OTHER element.
+            // If clicked from Card (card-id), find Popup (popup-id) and update.
+            // If clicked from Popup, find Card and update.
+
+            // Re-render is expensive. Let's do a quick scan since we have allData.
+            const item = allData.find(d => d._favKey === key);
+            if (item) {
+                // Update Card
+                const cardBtn = document.querySelector(`#card-${item._uid} .fav-btn i`);
+                if (cardBtn) {
+                    cardBtn.className = favorites.has(key) ? "fas fa-heart" : "far fa-heart";
+                    cardBtn.style.color = favorites.has(key) ? "#ff3b30" : "#999";
+                }
+                // Update Popup (if open or exists in DOM)
+                const popupBtn = document.getElementById(`fav-popup-${item._uid}`);
+                if (popupBtn) {
+                    const i = popupBtn.querySelector('i');
+                    if (i) {
+                        i.className = favorites.has(key) ? "fas fa-heart" : "far fa-heart";
+                        i.style.color = favorites.has(key) ? "#ff3b30" : "#999";
+                    }
+                }
+            }
+
+            function updateIcon(isFav) {
+                // Logic moved to "broadcast" above to handle both locations
+            }
         };
 
         function downloadCsvTemplate() {
