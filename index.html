@@ -696,9 +696,9 @@
         <div class="filter-container">
             <div class="filter-scroll" id="filter-list">
                 <div class="pill active" data-filter="all">全部</div>
-                <div class="pill" data-filter="北部">北部(N)</div>
-                <div class="pill" data-filter="中部">中部(M)</div>
-                <div class="pill" data-filter="南部">南部(S)</div>
+                <div class="pill" data-filter="北部">北部</div>
+                <div class="pill" data-filter="中部">中部</div>
+                <div class="pill" data-filter="南部">南部</div>
                 <div class="pill" data-filter="飯店">飯店</div>
 
                 <div class="pill" data-filter="景點">景點</div>
@@ -761,7 +761,18 @@
                 <button onclick="saveSettings()"
                     style="flex:1; padding:10px; border:none; background:#007AFF; color:white; border-radius:8px; font-weight:500; cursor:pointer;">儲存</button>
             </div>
+
+            <!-- App Update Force -->
+            <div style="margin-top:16px; border-top:1px solid #eee; padding-top:16px; text-align:center;">
+                <button onclick="forceAppUpdate()"
+                    style="background:none; border:none; color:#999; font-size:12px; cursor:pointer;">
+                    <i class="fas fa-sync"></i> 檢查並更新應用程式
+                </button>
+            </div>
+
         </div>
+    </div>
+    </div>
     </div>
 
     <!-- Scripts -->
@@ -1673,6 +1684,22 @@
 
         function closeSettings() {
             document.getElementById('settings-modal').style.display = 'none';
+        }
+
+        function forceAppUpdate() {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistration().then(reg => {
+                    if (reg) {
+                        reg.update().then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        window.location.reload();
+                    }
+                });
+            } else {
+                window.location.reload();
+            }
         }
 
         function resetSettings() {
