@@ -609,6 +609,20 @@
             background-color: #eee;
         }
 
+        .card-tag {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            background: rgba(0, 0, 0, 0.6);
+            color: #fff;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 2;
+        }
+
         .card-info {
             flex: 1;
             padding: 10px 12px;
@@ -1552,13 +1566,15 @@
                     card.innerHTML = `
                         <div class="card-img" style="background-image: url('${img}');">
                             <span class="card-tag">${item.category}</span>
-                            <div class="fav-btn" onclick="toggleFavorite('${item._favKey}', this); event.stopPropagation();" 
-                                style="position:absolute; top:8px; right:8px; background:white; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(0,0,0,0.2); cursor:pointer;">
-                                <i class="${heartClass}" style="color:${heartColor}; font-size:16px;"></i>
-                            </div>
                         </div>
                         <div class="card-content" onclick="window.selectResult(${item.lat}, ${item.lng}, '${nameEsc}')">
-                            <div class="card-title">${item.name}</div>
+                            <div class="card-top">
+                                <div class="card-title">${item.name}</div>
+                                <div class="fav-btn" onclick="toggleFavorite('${item._favKey}', this); event.stopPropagation();" 
+                                     style="cursor:pointer; padding:0 4px;">
+                                    <i class="${heartClass}" style="color:${heartColor}; font-size:18px;"></i>
+                                </div>
+                            </div>
                             <div class="card-info"><i class="fas fa-map-marker-alt"></i> ${item.region} · ${item.price || '-'}</div>
                             <div class="card-desc">${desc}</div>
                         </div>
