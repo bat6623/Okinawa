@@ -733,8 +733,7 @@
                 <div class="pill" data-filter="飯店">飯店</div>
 
                 <div class="pill" data-filter="景點">景點</div>
-                <div class="pill" data-filter="最愛" style="color:#ff3b30; border-color:#ff3b30;"><i
-                        class="fas fa-heart"></i> 最愛</div>
+                <div class="pill" data-filter="景點">景點</div>
             </div>
         </div>
 
@@ -751,6 +750,9 @@
         </button>
         <button class="btn-action" onclick="openSettings()" style="margin-bottom:12px;">
             <i class="fas fa-cog"></i>
+        </button>
+        <button class="btn-action" id="btn-fav-toggle" onclick="toggleFavoritesMode()" style="margin-bottom:12px;">
+            <i class="fas fa-heart"></i>
         </button>
         <button class="btn-action" id="btn-locate">
             <i class="fas fa-crosshairs"></i>
@@ -815,11 +817,10 @@
         let SHEET_JSONP = localStorage.getItem('custom_sheet_url') || DEFAULT_SHEET_JSONP;
 
         // --- STATE ---
-        let map, markersCluster;
-        let allData = [];
         let userMarker;
         // let categories = new Set(); // Removed
         let favorites = new Set();
+        let isFavoritesMode = false;
 
         // --- INIT ---
         function initApp() {
@@ -863,6 +864,30 @@
                 applyFilter();
             });
 
+
+
+            // Listener for Pills to disable Fav Mode
+            document.getElementById('filter-list').addEventListener('click', (e) => {
+                if (e.target.classList.contains('pill')) {
+                    // If picking a category, disable Fav Mode
+                    if (isFavoritesMode) {
+                        isFavoritesMode = false;
+                        const btn = document.getElementById('btn-fav-toggle');
+                        btn.style.background = '';
+                        btn.style.color = '';
+                    }
+
+                    document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+                    e.target.classList.add('active');
+
+                    // Clear search logic (optional, keep existing behavior)
+                    document.getElementById('search-input').value = '';
+                    document.querySelector('.search-container').style.display = 'none';
+                    document.getElementById('btn-search-toggle').classList.remove('active');
+
+                    applyFilter();
+                }
+            });
             // Toggle Search Bar
             document.getElementById('btn-search-toggle').addEventListener('click', (e) => {
                 const container = document.querySelector('.search-container');
@@ -1453,13 +1478,32 @@
 
         }
 
+        function toggleFavoritesMode() {
+            isFavoritesMode = !isFavoritesMode;
+            const btn = document.getElementById('btn-fav-toggle');
+
+            if (isFavoritesMode) {
+                document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+                btn.style.background = 'var(--primary-color)';
+                btn.style.color = 'white';
+            } else {
+                document.querySelector('.pill[data-filter="all"]').classList.add('active');
+                btn.style.background = '';
+                btn.style.color = '';
+            }
+            applyFilter();
+        }
+
         function applyFilter(skipZoom) {
             const activeFilter = document.querySelector('.pill.active').dataset.filter;
             const searchVal = document.getElementById('search-input').value.toLowerCase().trim();
 
             const filtered = allData.filter(d => {
                 let matchFilter = true;
-                if (activeFilter !== 'all') {
+
+                if (isFavoritesMode) {
+                    matchFilter = favorites.has(d._favKey);
+                } else if (activeFilter !== 'all') {
                     if (['北部', '中部', '南部'].includes(activeFilter)) {
                         matchFilter = d.region === activeFilter;
                     } else {
@@ -1469,8 +1513,6 @@
                             matchFilter = cat.includes('飯店') || cat.includes('hotel') || cat.includes('住宿') || d.region === '飯店';
                         } else if (activeFilter === '景點') {
                             matchFilter = cat.includes('景點') || cat.includes('觀光') || cat.includes('sightseeing') || cat.includes('travel');
-                        } else if (activeFilter === '最愛') {
-                            matchFilter = favorites.has(d._favKey);
                         } else {
                             matchFilter = d.category === activeFilter;
                         }
@@ -1900,6 +1942,26 @@
             link.click();
             document.body.removeChild(link);
         }
+        // --- GLOBAL ACTIONS ---
+        function toggleFavorite(key, btn) {
+            // Prevent event bubbling if not already handled
+            if (event) event.stopPropagation();
+
+            if (favorites.has(key)) {
+                favorites.delete(key);
+                showToast("已從最愛移除");
+            } else {
+                favorites.add(key);
+                showToast("已加入最愛");
+            }
+            localStorage.setItem('my_favorites', JSON.stringify(Array.from(favorites)));
+
+            // Update UI
+            // If in favorites mode, we must re-filter to hide removed item
+            // If not, we still re-render to update all heart icons (card & popup)
+            applyFilter(true);
+        }
+
     </script>
 </body>
 
