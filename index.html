@@ -694,7 +694,10 @@
                 <div class="pill" data-filter="中部">中部(M)</div>
                 <div class="pill" data-filter="南部">南部(S)</div>
                 <div class="pill" data-filter="飯店">飯店</div>
+
                 <div class="pill" data-filter="景點">景點</div>
+                <div class="pill" data-filter="最愛" style="color:#ff3b30; border-color:#ff3b30;"><i
+                        class="fas fa-heart"></i> 最愛</div>
             </div>
         </div>
 
@@ -770,9 +773,15 @@
         let allData = [];
         let userMarker;
         // let categories = new Set(); // Removed
+        let favorites = new Set();
 
         // --- INIT ---
         function initApp() {
+            // Load Favorites
+            try {
+                const favs = JSON.parse(localStorage.getItem('my_favorites') || '[]');
+                favorites = new Set(favs);
+            } catch (e) { console.error("Fav Load Error", e); }
             // 1. Setup Map (CartoDB Voyager)
             map = L.map('map', { zoomControl: false }).setView([26.4, 127.9], 10);
 
@@ -991,7 +1000,9 @@
                     link: displayLink,
                     img: img,
                     lat, lng,
-                    _uid: `item-${uidCounter++}` // Assign UI ID
+                    lat, lng,
+                    _uid: `item-${uidCounter++}`, // Assign UI ID
+                    _favKey: `${v(idx.name)}|${v(idx.region)}` // Persistent Key
                 };
             }).filter(x => x);
 
@@ -1391,6 +1402,8 @@
                             matchFilter = cat.includes('飯店') || cat.includes('hotel') || cat.includes('住宿') || d.region === '飯店';
                         } else if (activeFilter === '景點') {
                             matchFilter = cat.includes('景點') || cat.includes('觀光') || cat.includes('sightseeing') || cat.includes('travel');
+                        } else if (activeFilter === '最愛') {
+                            matchFilter = favorites.has(d._favKey);
                         } else {
                             matchFilter = d.category === activeFilter;
                         }
@@ -1495,30 +1508,29 @@
                     const desc = item.must ? `必點：${item.must}` : (item.desc || item.addr);
                     const nameEsc = item.name.replace(/'/g, "\\'");
 
-                    card = document.createElement('div');
-                    card.className = 'card-item';
-                    card.id = cardId;
-                    card.onclick = () => selectResult(item.lat, item.lng, nameEsc);
+                    const isFav = favorites.has(item._favKey);
+                    const heartClass = isFav ? "fas fa-heart" : "far fa-heart";
+                    const heartColor = isFav ? "#ff3b30" : "#999";
 
+                    card = document.createElement('div');
+                    card.className = 'card';
+                    card.id = cardId;
                     card.innerHTML = `
-                        <img src="${img}" class="card-img" loading="lazy" alt="${item.name}">
-                        <div class="card-info">
-                            <div class="card-top">
-                                <div class="card-title">${item.name}</div>
-                                <div class="card-dist" data-lat="${item.lat}" data-lng="${item.lng}">---</div>
+                        <div class="card-img" style="background-image: url('${img}');">
+                            <span class="card-tag">${item.category}</span>
+                            <div class="fav-btn" onclick="toggleFavorite('${item._favKey}', this); event.stopPropagation();" 
+                                style="position:absolute; top:8px; right:8px; background:white; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(0,0,0,0.2); cursor:pointer;">
+                                <i class="${heartClass}" style="color:${heartColor}; font-size:16px;"></i>
                             </div>
-                            <div class="card-body-text">${item.category} · ${item.region}</div>
-                            <div class="card-highlight">${desc}</div>
+                        </div>
+                        <div class="card-content" onclick="window.selectResult(${item.lat}, ${item.lng}, '${nameEsc}')">
+                            <div class="card-title">${item.name}</div>
+                            <div class="card-info"><i class="fas fa-map-marker-alt"></i> ${item.region} · ${item.price || '-'}</div>
+                            <div class="card-desc">${desc}</div>
                         </div>
                     `;
                     container.appendChild(card);
                 } else {
-                    // Update potentially changed props (like lat/lng if geocoded)
-                    const distEl = card.querySelector('.card-dist');
-                    if (item.lat && item.lng) {
-                        distEl.dataset.lat = item.lat;
-                        distEl.dataset.lng = item.lng;
-                    }
                     // Re-append to ensure order matches 'data' list
                     container.appendChild(card);
                 }
@@ -1694,6 +1706,29 @@
 
             return images.default;
         }
+
+        window.toggleFavorite = function (key, btn) {
+            if (favorites.has(key)) {
+                favorites.delete(key);
+                if (btn) {
+                    const icon = btn.querySelector('i');
+                    icon.className = "far fa-heart";
+                    icon.style.color = "#999";
+                }
+            } else {
+                favorites.add(key);
+                if (btn) {
+                    const icon = btn.querySelector('i');
+                    icon.className = "fas fa-heart";
+                    icon.style.color = "#ff3b30";
+
+                    // Simple animation
+                    icon.style.transform = "scale(1.2)";
+                    setTimeout(() => icon.style.transform = "scale(1)", 200);
+                }
+            }
+            localStorage.setItem('my_favorites', JSON.stringify([...favorites]));
+        };
 
         function downloadCsvTemplate() {
             // Updated columns based on getIdx mapping
