@@ -1495,7 +1495,8 @@
         }
 
         function applyFilter(skipZoom) {
-            const activeFilter = document.querySelector('.pill.active').dataset.filter;
+            const activePill = document.querySelector('.pill.active');
+            const activeFilter = activePill ? activePill.dataset.filter : 'all'; // Fallback if no pill active (Fav Mode)
             const searchVal = document.getElementById('search-input').value.toLowerCase().trim();
 
             const filtered = allData.filter(d => {
