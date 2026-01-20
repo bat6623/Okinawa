@@ -571,7 +571,8 @@
             display: none;
         }
 
-        .card-item {
+        .card-item,
+        .card {
             flex: 0 0 85%;
             /* Mobile width */
             max-width: 320px;
@@ -589,16 +590,21 @@
             flex-direction: row;
             /* Horizontal layout */
             height: 100px;
+            position: relative;
+            /* For fav icon positioning */
         }
 
-        .card-item:active {
+        .card-item:active,
+        .card:active {
             transform: scale(0.98);
         }
 
         .card-img {
             width: 100px;
             height: 100%;
-            object-fit: cover;
+            background-size: cover;
+            background-position: center;
+            position: relative;
             flex-shrink: 0;
             background-color: #eee;
         }
