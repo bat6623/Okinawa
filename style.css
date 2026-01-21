@@ -626,6 +626,12 @@ html {
 .card-meta {
     color: var(--text-sub);
     font-size: 13px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    line-clamp: 2;
+    overflow: hidden;
+    margin-bottom: 16px;
 }
 
 .card-title {
