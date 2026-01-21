@@ -200,11 +200,12 @@
         }
 
         function deleteDay(index) {
-
-            let schedule = JSON.parse(localStorage.getItem('my_schedule') || '[]');
-            schedule.splice(index, 1);
-            localStorage.setItem('my_schedule', JSON.stringify(schedule));
-            renderSchedule();
+            if (confirm('確定要刪除這一天的行程嗎？')) {
+                let schedule = JSON.parse(localStorage.getItem('my_schedule') || '[]');
+                schedule.splice(index, 1);
+                localStorage.setItem('my_schedule', JSON.stringify(schedule));
+                renderSchedule();
+            }
         }
 
         function removeFromDay(dayIndex, itemIndex, e) {
