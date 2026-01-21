@@ -1,4 +1,4 @@
-const CACHE_NAME = 'okinawa-food-v4';
+const CACHE_NAME = 'okinawa-food-v5';
 
 // Force immediate activation when requested
 self.addEventListener('message', (event) => {
@@ -9,6 +9,9 @@ self.addEventListener('message', (event) => {
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
+    './schedule.html',
+    './data.js',
+    './style.css',
     './manifest.json',
     './icon.png',
     'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
