@@ -195,7 +195,7 @@
             <i class="fas fa-calendar-alt"></i>
             <span>行程</span>
         </button>
-        <button class="nav-item" onclick="alert('請回到地圖頁進行設定')">
+        <button class="nav-item" onclick="openSettings()">
             <i class="fas fa-cog"></i>
             <span>設定</span>
         </button>
@@ -226,6 +226,49 @@
             <div style="font-size:13px; color:#999; margin-bottom:12px; font-weight:600;">或加入現有行程：</div>
             <div id="schedule-days-list"
                 style="max-height:300px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;"></div>
+        </div>
+    </div>
+
+    <!-- Settings Modal (Reused) -->
+    <div id="settings-modal" onclick="if(event.target === this) closeSettings()"
+        style="display:none; position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,0.4); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); align-items:center; justify-content:center;">
+        <div
+            style="background:var(--surface); width:90%; max-width:400px; border-radius:var(--radius-card); padding:28px; box-shadow:var(--shadow-card);">
+            <h3 style="margin-bottom:20px; font-size:20px; color:var(--text-main); font-weight:700;">資料來源設定</h3>
+            <p style="font-size:14px; color:var(--text-sub); margin-bottom:16px;">請輸入 Google Sheet 的分享連結或 JSONP 網址：</p>
+
+            <div
+                style="margin-bottom:20px; padding:16px; background:var(--background); border-radius:12px; border:1px solid rgba(0,0,0,0.05);">
+                <p style="font-size:13px; color:var(--text-main); margin-bottom:6px; font-weight:600;">
+                    <i class="fas fa-file-csv" style="margin-right:4px;"></i> 建立新資料？
+                </p>
+                <p style="font-size:12px; color:var(--text-sub); margin-bottom:12px;">
+                    下載欄位規範範本，填寫後匯入 Google Sheet 即可。
+                </p>
+                <button onclick="downloadCsvTemplate()"
+                    style="background:var(--text-main); color:white; border:none; padding:8px 16px; border-radius:20px; font-size:12px; cursor:pointer; font-weight:600; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+                    <i class="fas fa-download"></i> 下載 CSV 範本
+                </button>
+            </div>
+            <input type="text" id="sheet-url-input" placeholder="https://docs.google.com/spreadsheets/..."
+                style="width:100%; padding:12px; border:1px solid #eee; background:var(--background); border-radius:12px; margin-bottom:20px; font-size:14px; color:var(--text-main); outline:none;">
+
+            <div style="display:flex; justify-content:space-between; gap:12px;">
+                <button onclick="resetSettings()"
+                    style="flex:1; padding:12px; border:none; background:var(--background); color:var(--danger); border-radius:12px; font-weight:600; cursor:pointer;">重置</button>
+                <button onclick="closeSettings()"
+                    style="flex:1; padding:12px; border:none; background:var(--background); color:var(--text-sub); border-radius:12px; font-weight:600; cursor:pointer;">取消</button>
+                <button onclick="saveSettings()"
+                    style="flex:1; padding:12px; border:none; background:var(--primary-color); color:white; border-radius:12px; font-weight:600; cursor:pointer; box-shadow:0 4px 12px rgba(255, 56, 92, 0.3);">儲存</button>
+            </div>
+
+            <!-- App Update Force -->
+            <div style="margin-top:20px; border-top:1px solid #eee; padding-top:20px; text-align:center;">
+                <button onclick="forceAppUpdate()"
+                    style="background:none; border:none; color:var(--text-sub); font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; width:100%; gap:6px;">
+                    <i class="fas fa-sync"></i> 檢查並更新應用程式 <span style="opacity:0.6;">(v17)</span>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -402,6 +445,65 @@
             localStorage.setItem('my_schedule', JSON.stringify(schedule));
             closeScheduleModal();
             alert(`已加入 Day ${dayIdx + 1}: ${currentScheduleItem.name}`);
+        }
+
+        // --- Settings Logic --- //
+        function openSettings() {
+            document.getElementById('settings-modal').style.display = 'flex';
+            // Pre-fill
+            const currentUrl = localStorage.getItem('food_data_url') || "";
+            document.getElementById('sheet-url-input').value = currentUrl;
+        }
+
+        function closeSettings() {
+            document.getElementById('settings-modal').style.display = 'none';
+        }
+
+        function saveSettings() {
+            const url = document.getElementById('sheet-url-input').value.trim();
+            if (url) {
+                localStorage.setItem('food_data_url', url);
+                alert("設定已儲存，將重新載入資料");
+                window.location.reload();
+            } else {
+                closeSettings();
+            }
+        }
+
+        function resetSettings() {
+            if (confirm("確定要重置為預設資料來源嗎？")) {
+                localStorage.removeItem('food_data_url');
+                alert("已重置，將重新載入");
+                window.location.reload();
+            }
+        }
+
+        function downloadCsvTemplate() {
+            const csvContent = "name,lat,lng,category,region,desc,addr,price,must\n範例餐廳,26.2123,127.6791,美食,那霸,這是一間好吃的餐廳,沖繩縣那霸市...,Medium,招牌菜";
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", "okinawa_food_template.csv");
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function forceAppUpdate() {
+            if (window.confirm("確定要強制更新應用程式版本嗎？(將清除快取並重新載入)")) {
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.getRegistrations().then(function (registrations) {
+                        for (let registration of registrations) {
+                            registration.unregister();
+                        }
+                        window.location.reload(true);
+                    });
+                } else {
+                    window.location.reload(true);
+                }
+            }
         }
 
     </script>
