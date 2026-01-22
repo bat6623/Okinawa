@@ -1,4 +1,4 @@
-const CACHE_NAME = 'okinawa-food-v14';
+const CACHE_NAME = 'okinawa-food-v15';
 
 // Force immediate activation when requested
 self.addEventListener('message', (event) => {
